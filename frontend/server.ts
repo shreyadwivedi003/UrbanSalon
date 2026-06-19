@@ -25,13 +25,9 @@ function getGeminiClient(): GoogleGenAI {
   if (!aiClient) {
     let key = process.env.GEMINI_API_KEY;
     
-    // Absolute fallback boundary tracking for live deployment safety
+    // Clean, secure fallback boundary check
     if (!key || key === "MY_GEMINI_API_KEY" || key.trim() === "") {
-       key = "AQ.Ab8RN6ItS5P927Ugv6LPPuf3lhZZXB3o40XUI76_ApU0apYnxg"; 
-    }
-    
-    if (!key || key.trim() === "") {
-       throw new Error("GEMINI_API_KEY is not configured in secrets.");
+       throw new Error("GEMINI_API_KEY is not configured in environment secrets.");
     }
     
     aiClient = new GoogleGenAI({

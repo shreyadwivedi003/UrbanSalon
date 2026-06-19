@@ -18,18 +18,12 @@ function getGeminiClient(): GoogleGenAI {
   if (!aiClient) {
     const key = process.env.GEMINI_API_KEY;
     
-    if (!key || key === "MY_GEMINI_API_KEY" || key.trim() === "") {
-       throw new Error("GEMINI_API_KEY is not configured in environment secrets.");
+    if (!key || key.trim() === "" || key === "MY_GEMINI_API_KEY") {
+       throw new Error("GEMINI_API_KEY is not defined in environment variables.");
     }
     
-    aiClient = new GoogleGenAI({
-      apiKey: key,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        },
-      },
-    });
+    // Clean, standard SDK initialization pattern
+    aiClient = new GoogleGenAI({ apiKey: key });
   }
   return aiClient;
 }
@@ -81,10 +75,14 @@ app.post("/api/partners", (req: Request, res: Response) => {
 app.post("/api/analyze-face", async (req: Request, res: Response) => {
   try {
     const { imageBase64, mimeType } = req.body;
+    if (!imageBase64) {
+      return res.status(400).json({ error: "Missing imageBase64 parameter in request body." });
+    }
+
     const client = getGeminiClient();
 
     const analysisPrompt = `
-      Analyze this portrait. Return ONLY a raw JSON object matching this schema exactly. Do not include markdown codeblocks or extra text:
+      Analyze this portrait. Return ONLY a valid JSON object matching this schema structure exactly:
       {
         "faceShape": "Oval",
         "skinTone": "Warm Honey",
@@ -101,6 +99,7 @@ app.post("/api/analyze-face", async (req: Request, res: Response) => {
       }
     `;
 
+    // Process using official structured JSON configuration constraints
     const response = await client.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: [
@@ -111,17 +110,26 @@ app.post("/api/analyze-face", async (req: Request, res: Response) => {
           }
         },
         analysisPrompt
-      ]
+      ],
+      config: {
+        responseMimeType: "application/json"
+      }
     });
 
-    const outputText = response.text || "{}";
+    const outputText = response.text;
+    if (!outputText) {
+      throw new Error("Gemini returned an empty response text.");
+    }
+
+    // Clean any possible leftover markdown boundaries safely
     const cleanJsonString = outputText.replace(/```json/g, "").replace(/```/g, "").trim();
     const structuredResult = JSON.parse(cleanJsonString);
 
     return res.json(structuredResult);
 
   } catch (error: any) {
-    console.warn("⚠️ Live Gemini server at capacity. Launching luxury backup engine node:", error.message);
+    // CRITICAL: Log the FULL error structure to your Vercel Logs for diagnostic precision
+    console.error("❌ Gemini API Pipeline Failure Detailed Trace:", error);
 
     const architecturalSafetyNet = {
       faceShape: "Oval-Symmetrical Structured Geometry",

@@ -1,0 +1,32 @@
+{
+  "name": "urbansalon-backend",
+  "version": "1.0.0",
+  "description": "Enterprise-grade Node.js Engine powering the UrbanSalon AI-driven marketplace backend.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "NODE_ENV=production node src/server.js",
+    "dev": "NODE_ENV=development node src/server.js",
+    "db:init": "psql -U postgres -d urbansalon -f init.sql"
+  },
+  "keywords": [
+    "express",
+    "postgresql",
+    "pgvector",
+    "anthropic-claude",
+    "marketplace",
+    "serverless"
+  ],
+  "author": "UrbanSalon Team",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

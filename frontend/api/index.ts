@@ -1,7 +1,6 @@
 import express from "express";
 import type { Request, Response } from "express";
 import dotenv from "dotenv";
-import { GoogleGenAI } from "@google/genai";
 
 // Initialize configuration environment tracking
 dotenv.config();
@@ -11,21 +10,13 @@ const app = express();
 // Body parser configuration for payload handling
 app.use(express.json({ limit: "15mb" }));
 
-// Lazy initializer context for Google Gemini API Client
-let aiClient: GoogleGenAI | null = null;
-
-function getGeminiClient(): GoogleGenAI {
-  if (!aiClient) {
-    const key = process.env.GEMINI_API_KEY;
-    
-    if (!key || key.trim() === "" || key === "MY_GEMINI_API_KEY") {
-       throw new Error("GEMINI_API_KEY is not defined in environment variables.");
-    }
-    
-    // Clean, standard SDK initialization pattern
-    aiClient = new GoogleGenAI({ apiKey: key });
+// Helper function to safely load and validate the Gemini API Key
+function getApiKey(): string {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key || key.trim() === "" || key === "MY_GEMINI_API_KEY") {
+    throw new Error("GEMINI_API_KEY is not defined in environment variables.");
   }
-  return aiClient;
+  return key.trim();
 }
 
 // Global In-Memory Store Simulation (Acts as a database for your bookings and partners)
@@ -71,7 +62,7 @@ app.post("/api/partners", (req: Request, res: Response) => {
   res.json({ success: true, collective: internalPartnersLedger });
 });
 
-// 6. Gemini Multimodal Face Analysis Routing Pipeline
+// 6. Gemini Multimodal Face Analysis Routing Pipeline (Bypassing SDK bugs using direct REST Fetch)
 app.post("/api/analyze-face", async (req: Request, res: Response) => {
   try {
     const { imageBase64, mimeType } = req.body;
@@ -79,7 +70,8 @@ app.post("/api/analyze-face", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Missing imageBase64 parameter in request body." });
     }
 
-    const client = getGeminiClient();
+    const apiKey = getApiKey();
+    const cleanBase64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
 
     const analysisPrompt = `
       Analyze this portrait. Return ONLY a valid JSON object matching this schema structure exactly:
@@ -99,37 +91,58 @@ app.post("/api/analyze-face", async (req: Request, res: Response) => {
       }
     `;
 
-    // Process using official structured JSON configuration constraints
-    const response = await client.models.generateContent({
-      model: 'gemini-2.5-flash',
+    // Construct standard REST request payload body
+    const requestPayload = {
       contents: [
         {
-          inlineData: {
-            data: imageBase64.replace(/^data:image\/\w+;base64,/, ""), 
-            mimeType: mimeType || "image/jpeg"
-          }
-        },
-        analysisPrompt
+          parts: [
+            {
+              inlineData: {
+                mimeType: mimeType || "image/jpeg",
+                data: cleanBase64Data
+              }
+            },
+            {
+              text: analysisPrompt
+            }
+          ]
+        }
       ],
-      config: {
+      generationConfig: {
         responseMimeType: "application/json"
       }
+    };
+
+    // Make direct, secure REST handshake bypassing SDK auth wrapping
+    const endpointUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    
+    const fetchResponse = await fetch(endpointUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(requestPayload)
     });
 
-    const outputText = response.text;
-    if (!outputText) {
+    if (!fetchResponse.ok) {
+      const errorText = await fetchResponse.text();
+      throw new Error(`Google API responded with HTTP status ${fetchResponse.status}: ${errorText}`);
+    }
+
+    const jsonResult: any = await fetchResponse.json();
+    const responseText = jsonResult?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!responseText) {
       throw new Error("Gemini returned an empty response text.");
     }
 
-    // Clean any possible leftover markdown boundaries safely
-    const cleanJsonString = outputText.replace(/```json/g, "").replace(/```/g, "").trim();
-    const structuredResult = JSON.parse(cleanJsonString);
-
+    // Parse and respond with structured output
+    const structuredResult = JSON.parse(responseText.trim());
     return res.json(structuredResult);
 
   } catch (error: any) {
-    // CRITICAL: Log the FULL error structure to your Vercel Logs for diagnostic precision
-    console.error("❌ Gemini API Pipeline Failure Detailed Trace:", error);
+    // Log details of the connection in case of failure
+    console.error("❌ Direct Gemini REST Pipeline Failure Trace:", error.message || error);
 
     const architecturalSafetyNet = {
       faceShape: "Oval-Symmetrical Structured Geometry",

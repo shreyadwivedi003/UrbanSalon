@@ -116,6 +116,11 @@ export default function App() {
       
       const data = await response.json();
       setAiResult(data);
+
+      // Automatically select the primary recommendation as the active choice in your booking form
+      if (data?.primaryRecommendation?.name) {
+        setTreatmentName(data.primaryRecommendation.name);
+      }
     } catch (err) {
       console.error("Analysis sequence crashed:", err);
     } finally {
@@ -252,9 +257,32 @@ export default function App() {
               <h3>Secure Live Checkout Slot</h3>
               <form onSubmit={handleCreateBooking} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Client Profile Name" style={{ padding: '10px', borderRadius: '6px', border: '1px solid #30363d', backgroundColor: '#090d16', color: 'white' }} />
-                <select value={treatmentName} onChange={(e) => setTreatmentName(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #30363d', backgroundColor: '#090d16', color: 'white' }}>
-                  <option value="Structured Glass Bob">Structured Glass Bob</option>
-                  <option value="Curtain Fringe Accentuation">Curtain Fringe Accentuation</option>
+                <select 
+                  value={treatmentName} 
+                  onChange={(e) => setTreatmentName(e.target.value)} 
+                  style={{ padding: '10px', borderRadius: '6px', border: '1px solid #30363d', backgroundColor: '#090d16', color: 'white', width: '100%', cursor: 'pointer' }}
+                >
+                  {/* Displays baseline options if no AI analysis data has been loaded yet */}
+                  {!aiResult && (
+                    <>
+                      <option value="Structured Glass Bob">Structured Glass Bob</option>
+                      <option value="Curtain Fringe Accentuation">Curtain Fringe Accentuation</option>
+                    </>
+                  )}
+
+                  {/* Dynamically loads the Top Match option when Gemini analysis data is present */}
+                  {aiResult?.primaryRecommendation && (
+                    <option value={aiResult.primaryRecommendation.name}>
+                      ✨ {aiResult.primaryRecommendation.name} (AI Top Match)
+                    </option>
+                  )}
+
+                  {/* Dynamically loops through alternatives if Gemini analysis data is present */}
+                  {aiResult?.subRecommendations?.map((style: any, index: number) => (
+                    <option key={index} value={style.name}>
+                      ✨ {style.name} (AI Alternative)
+                    </option>
+                  ))}
                 </select>
                 <button type="submit" style={{ padding: '10px', background: '#21262d', color: '#f0e6d2', border: '1px solid #30363d', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Commit Slot</button>
               </form>

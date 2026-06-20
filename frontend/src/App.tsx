@@ -167,6 +167,27 @@ export default function App() {
   return (
     <div style={{ padding: '30px', fontFamily: '"Segoe UI", sans-serif', backgroundColor: '#090d16', color: '#f0f6fc', minHeight: '100vh' }}>
       <header style={{ textAlign: 'center', marginBottom: '40px', borderBottom: '1px solid #21262d', paddingBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '15px' }}>
+          <svg 
+            width="60" 
+            height="60" 
+            viewBox="0 0 100 100" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ filter: 'drop-shadow(0px 0px 8px rgba(240, 230, 210, 0.2))' }}
+          >
+            {/* Abstract Scissors Loop left */}
+            <circle cx="35" cy="40" r="12" stroke="#f0e6d2" strokeWidth="4" />
+            {/* Abstract Scissors Loop right */}
+            <circle cx="65" cy="40" r="12" stroke="#f0e6d2" strokeWidth="4" />
+            {/* AI Diamond/Prism Intersection Center */}
+            <path d="M50 20 L62 45 L50 70 L38 45 Z" stroke="#388bfd" strokeWidth="3" strokeLinejoin="round" fill="rgba(56, 139, 253, 0.1)" />
+            {/* Precision cutting blades fading down */}
+            <path d="M42 48 L48 85" stroke="#f0e6d2" strokeWidth="4" strokeLinecap="round" />
+            <path d="M58 48 L52 85" stroke="#f0e6d2" strokeWidth="4" strokeLinecap="round" />
+          </svg>
+        </div>
+
         <h1 style={{ color: '#f0e6d2', margin: '0 0 10px 0', fontSize: '2.5rem', letterSpacing: '1px' }}>URBAN SALON</h1>
         <p style={{ color: '#8b949e', margin: '0' }}>Bespoke AI Style Lab & Marketplace Engine</p>
         
@@ -262,7 +283,7 @@ export default function App() {
                   onChange={(e) => setTreatmentName(e.target.value)} 
                   style={{ padding: '10px', borderRadius: '6px', border: '1px solid #30363d', backgroundColor: '#090d16', color: 'white', width: '100%', cursor: 'pointer' }}
                 >
-                  {/* Displays baseline options if no AI analysis data has been loaded yet */}
+                  {/* Baseline options before analysis */}
                   {!aiResult && (
                     <>
                       <option value="Structured Glass Bob">Structured Glass Bob</option>
@@ -270,21 +291,21 @@ export default function App() {
                     </>
                   )}
 
-                  {/* Dynamically loads the Top Match option when Gemini analysis data is present */}
+                  {/* Top Match recommendation option */}
                   {aiResult?.primaryRecommendation && (
                     <option value={aiResult.primaryRecommendation.name}>
                       ✨ {aiResult.primaryRecommendation.name} (AI Top Match)
                     </option>
                   )}
 
-                  {/* Dynamically loops through alternatives if Gemini analysis data is present */}
+                  {/* Alternative recommendation options */}
                   {aiResult?.subRecommendations?.map((style: any, index: number) => (
                     <option key={index} value={style.name}>
                       ✨ {style.name} (AI Alternative)
                     </option>
                   ))}
                 </select>
-                <button type="submit" style={{ padding: '10px', background: '#238636', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Commit Slot</button>
+                <button type="submit" style={{ padding: '10px', background: '#238636', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Commit Slot</button>
               </form>
             </div>
             <div style={{ backgroundColor: '#161b22', padding: '20px', borderRadius: '12px', border: '1px solid #30363d' }}>

@@ -14,6 +14,38 @@ UrbanSalon is a cutting-edge, high-end boutique styling engine that merges compu
 
 ---
 
+
+## 📖 User Manual: How to Use the AI Style Lab
+Follow these steps to generate custom hair design parameters using your device's camera.
+
+1. Run the Facial Diagnostic Scan
+* Navigate to the 🔮 Gemini AI Diagnostic tab on the main dashboard.
+
+* Click the "Turn On Video Camera" button and grant the browser access to your webcam.
+
+* Center your face in the camera viewport layout and click "📸 Capture & Run Diagnostic Match".
+
+2. View Your Custom Aesthetic Parameters
+* The system shuts down the hardware stream immediately after snapshotting to ensure privacy.
+
+* Gemini 2.5 Flash evaluates your profile geometry and populates the Live Results Matrix instantly with:
+
+* Identified Face Geometry (e.g., Oval, Square, Round).
+
+* Estimated Luxury Skin Tone.
+
+* Primary Match Styling Card displaying suitability percentage, description, and aesthetic rationale.
+
+3. Commit a Dynamic Dynamic Booking
+* Click on the 📅 Bookings Manager tab.
+
+* Enter the client's name in the Secure Live Checkout Slot form.
+
+* Notice that the Service Dropdown has automatically synced to your AI recommendations! The standard fallback options are replaced with your custom ✨ AI Top Match and ✨ AI Alternatives.
+
+* Click "Commit Slot" to push the personalized appointment to the live operational ledger.
+
+
 ## 🛠️ Architecture & Tech Stack
 
 * **Frontend:** React 18, TypeScript, Vite (Modular Single Page Application Framework)

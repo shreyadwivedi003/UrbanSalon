@@ -284,7 +284,7 @@ export default function App() {
                     </option>
                   ))}
                 </select>
-                <button type="submit" style={{ padding: '10px', background: '#21262d', color: '#f0e6d2', border: '1px solid #30363d', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Commit Slot</button>
+                <button type="submit" style={{ padding: '10px', background: '#238636', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Commit Slot</button>
               </form>
             </div>
             <div style={{ backgroundColor: '#161b22', padding: '20px', borderRadius: '12px', border: '1px solid #30363d' }}>
